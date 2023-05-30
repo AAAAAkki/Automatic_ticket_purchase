@@ -13,6 +13,7 @@ import tools
 import argparse
 import requests
 from requests import session
+import config
 
 
 class DaMaiTicket:
@@ -20,12 +21,12 @@ class DaMaiTicket:
         # 登录信息
         self.login_cookies = {}
         self.session = session()
-        self.login_id: str = 'account'  # 大麦网登录账户名
-        self.login_password: str = 'password'  # 大麦网登录密码
+        self.login_id: str = '18706210735'  # 大麦网登录账户名
+        self.login_password: str = 'damai11235813'  # 大麦网登录密码
         # 以下为抢票必须的参数
-        self.item_id: int = 610820299671  # 商品id
-        self.viewer: list = ['viewer1']  # 在大麦网已填写的观影人
-        self.buy_nums: int = 1  # 购买影票数量, 需与观影人数量一致
+        self.item_id: int = 720545258599    # 商品id
+        self.viewer: list = ['姜子秋']  # 在大麦网已填写的观影人
+        self.buy_nums: int = len(self.viewer)  # 购买影票数量, 需与观影人数量一致
         self.ticket_price: int = 180  # 购买指定票价
 
     def step1_get_order_info(self, item_id, commodity_param, ticket_price=None):
@@ -82,7 +83,7 @@ class DaMaiTicket:
             'sec-ch-ua-mobile': '?0',
             'sec-ch-ua-platform': '"macOS"',
             'upgrade-insecure-requests': '1',
-            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36',
+            'user-agent': config.user_agent,
             'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
             'sec-fetch-site': 'same-site',
             'sec-fetch-mode': 'navigate',
@@ -127,7 +128,7 @@ class DaMaiTicket:
             'sec-fetch-site': 'same-site',
             'sec-fetch-user': '?1',
             'upgrade-insecure-requests': '1',
-            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36',
+            'user-agent': config.user_agent
         }
 
         params = {
@@ -173,7 +174,7 @@ class DaMaiTicket:
             'content-type': 'application/json;charset=UTF-8',
             'x-requested-with': 'XMLHttpRequest',
             'sec-ch-ua-mobile': '?0',
-            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.109 Safari/537.36',
+            'user-agent': config.user_agent,
             'sec-ch-ua-platform': '"macOS"',
             'origin': 'https://buy.damai.cn',
             'sec-fetch-site': 'same-origin',

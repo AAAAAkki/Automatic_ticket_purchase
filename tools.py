@@ -9,6 +9,8 @@ __Created__ = 2022/5/02 14:16
 import re
 import os
 import json
+import time
+
 import execjs
 import pickle
 import platform
@@ -19,6 +21,8 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+import config
 
 
 def save_cookies(login_cookies):
@@ -49,7 +53,7 @@ def check_login_status(login_cookies):
         'sec-ch-ua-mobile': '?0',
         'sec-ch-ua-platform': '"macOS"',
         'upgrade-insecure-requests': '1',
-        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.83 Safari/537.36',
+        'user-agent': config.user_agent,
         'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
         'sec-fetch-site': 'same-origin',
         'sec-fetch-mode': 'navigate',
@@ -80,8 +84,12 @@ def account_login(login_type: str, login_id=None, login_password=None):
     """
     damai_title = '大麦网-全球演出赛事官方购票平台-100%正品、先付先抢、在线选座！'
 
-    login_url = 'https://passport.damai.cn/login'
+    # login_url = 'https://passport.damai.cn/login'
+    login_url = 'https://m.damai.cn/damai/minilogin/index.html'
     option = webdriver.ChromeOptions()  # 默认Chrome浏览器
+    # switch user agent
+    option.add_argument('user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 13_2 like Mac OS X) AppleWebKit/605.1.15 ('
+                        'KHTML, like Gecko) CriOS/113.0.0.0 Mobile/15E148 Safari/604.1j')
     # 关闭开发者模式, window.navigator.webdriver 控件检测到你是selenium进入，若关闭会导致出现滑块并无法进入。
     option.add_experimental_option('excludeSwitches', ['enable-automation'])
     option.add_argument('--disable-blink-features=AutomationControlled')
@@ -102,14 +110,14 @@ def account_login(login_type: str, login_id=None, login_password=None):
     driver.get(login_url)
     if login_type == 'account':
         driver.switch_to.frame('alibaba-login-box')  # 切换内置frame，否则会找不到元素位置
-        driver.find_element_by_name('fm-login-id').send_keys(login_id)
-        driver.find_element_by_name('fm-login-password').send_keys(login_password)
-        driver.find_element_by_class_name('password-login').send_keys(Keys.ENTER)
-    WebDriverWait(driver, 180, 0.5).until(EC.title_contains(damai_title))
-
+        driver.find_element(By.CLASS_NAME, 'password-login-link').click()
+        driver.find_element(By.NAME, 'fm-login-id-mobile').send_keys(login_id)
+        driver.find_element(By.NAME, 'fm-login-password').send_keys(login_password)
+        driver.find_element(By.CLASS_NAME, 'password-login').send_keys(Keys.ENTER)
+    # WebDriverWait(driver, 180, 0.5).until(EC.title_contains(damai_title))
     login_cookies = {}
-    if driver.title != damai_title:
-        print('登录异常，请检查页面登录提示信息')
+    # if driver.title != damai_title:
+    #     print('登录异常，请检查页面登录提示信息')
     for cookie in driver.get_cookies():
         login_cookies[cookie['name']] = cookie['value']
     if check_login_status(login_cookies):
