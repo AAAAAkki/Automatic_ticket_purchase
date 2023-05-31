@@ -14,6 +14,7 @@ import argparse
 import requests
 from requests import session
 import config
+from config import info
 
 
 class DaMaiTicket:
@@ -21,13 +22,13 @@ class DaMaiTicket:
         # 登录信息
         self.login_cookies = {}
         self.session = session()
-        self.login_id: str = '18706210735'  # 大麦网登录账户名
-        self.login_password: str = 'damai11235813'  # 大麦网登录密码
+        self.login_id: str = info.get('id')  # 大麦网登录账户名
+        self.login_password: str = info.get('password')  # 大麦网登录密码
         # 以下为抢票必须的参数
-        self.item_id: int = 720545258599    # 商品id
-        self.viewer: list = ['姜子秋']  # 在大麦网已填写的观影人
+        self.item_id: int = info.get('item_id') # 商品id
+        self.viewer: list = info.get('viewer')  # 在大麦网已填写的观影人
         self.buy_nums: int = len(self.viewer)  # 购买影票数量, 需与观影人数量一致
-        self.ticket_price: int = 180  # 购买指定票价
+        self.ticket_price: int = info.get('price') # 购买指定票价
 
     def step1_get_order_info(self, item_id, commodity_param, ticket_price=None):
         """
