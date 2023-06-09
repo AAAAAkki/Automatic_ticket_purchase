@@ -425,3 +425,23 @@ def pick_seat(valuable_seat, stand_id, buy_nums):
                 selected_seats.append({'seatId': sid, 'standId': stand_id})
                 if len(selected_seats) == buy_nums:
                     return selected_seats
+
+
+def get_new_sign_code(h5_token: str, time_stamp, buy_param) -> str:
+    ex_params = {
+        "channel": "damai_app",
+        "damai": "1",
+        "umpChannel": "100031004",
+        "subChannel": "damai@damaih5_h5",
+        "atomSplit": 1,
+        "serviceVersion": "2.0.0",
+        "customerType": "default"
+        }
+    new_param_format = {
+    "buyNow": True,
+    "exParams": json.dumps(ex_params),
+    "buyParam": buy_param,
+    "dmChannel": "damai@damaih5_h5"
+    }
+
+    return get_sign_code(h5_token, time_stamp, json.dumps(new_param_format).replace(' ', ''))
