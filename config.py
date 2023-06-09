@@ -16,10 +16,44 @@ try:
     with open('info.txt', 'r', encoding='utf-8') as f:
         info = json.load(f)
 except Exception as e:
-    print(e)
+    print('-' * 10, 'User information Exception! Check file info.txt', '-' * 10)
     with open('info.txt', 'w+') as f:
         json.dump(info, f)
-print(info)
+
+# basic headers with user agent set to iPhone
+base_headers = {
+    'authority': 'm.damai.cn',
+    'sec-ch-ua': '""',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '""',
+    'upgrade-insecure-requests': '1',
+    'user-agent': user_agent,
+    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+    'sec-fetch-site': 'same-origin',
+    'sec-fetch-mode': 'navigate',
+    'sec-fetch-user': '?1',
+    'sec-fetch-dest': 'document',
+    'referer': 'https://damai.cn',
+    'accept-language': 'zh,en;q=0.9,en-US;q=0.8,zh-CN;q=0.7'
+    }
+
+base_params = {
+    'jsv': '2.7.2',
+    'appKey': 12574478,
+    't': 0,
+    'sign': '',
+    'type': 'originaljson',
+    'dataType': 'json',
+    'v': '4.0',
+    'H5Request': 'true',
+    'AntiCreep': 'true',
+    'AntiFlood': 'true',
+    'api': 'mtop.trade.order.build.h5',
+    'method': 'POST',
+    'ttid': '#t#ip##_h5_2014',
+    'globalCode': 'ali.china.damai',
+    'tb_eagleeyex_scm_project': '20190509-aone2-join-test'
+    }
 
 # urlencode:
 # exParams=%7B%22damai%22%3A+%221%22%2C+%22channel%22%3A+%22damai_app%22%2C+%22umpChannel%22%3A+%2210002%22%2C+%22atomSplit%22%3A+%221%22%2C+%22serviceVersion%22%3A+%221.8.5%22%7D&spm=a2o71.project.0.bottom&sqm=dianying.h5.unknown.value

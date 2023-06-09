@@ -9,12 +9,14 @@ __Created__ = 2022/2/14 10:37 下午
 import re
 import os
 import json
+import time
 import tools
 import argparse
 import requests
 from requests import session
 import config
-from config import info
+from config import info, base_headers, base_params
+from urllib.parse import urlencode
 
 
 class DaMaiTicket:
@@ -78,30 +80,28 @@ class DaMaiTicket:
         :return:
         """
 
-        headers = {
-            'authority': 'buy.damai.cn',
-            'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="99", "Google Chrome";v="99"',
-            'sec-ch-ua-mobile': '?0',
-            'sec-ch-ua-platform': '"macOS"',
-            'upgrade-insecure-requests': '1',
-            'user-agent': config.user_agent,
-            'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-            'sec-fetch-site': 'same-site',
-            'sec-fetch-mode': 'navigate',
-            'sec-fetch-user': '?1',
-            'sec-fetch-dest': 'document',
-            'referer': 'https://detail.damai.cn/',
-            'accept-language': 'zh,en;q=0.9,en-US;q=0.8,zh-CN;q=0.7'
-        }
+        item_id = sku_info.split('_')[0]
+        headers = base_headers
+        headers.update({'referer': 'https://m.damai.cn/damai/detail/item.html?itemId='
+                                   f'{item_id}&spm=a2o71.category.itemlist.ditem_0'})
+
         params = {
-            'exParams': json.dumps(ex_params),
             'buyParam': sku_info,
             'buyNow': 'true',
-            'spm': 'a2oeg.project.projectinfo.dbuy'
+            'exParams': json.dumps(ex_params),
+            # 'spm': 'a2oeg.project.projectinfo.dbuy',
+            # 'spm': 'a2o71.project.0.bottom',
+            # 'sqm': 'dianying.h5.unknown.value'
         }
 
-        response = self.session.get('https://buy.damai.cn/orderConfirm', headers=headers,
-                                    params=params, cookies=self.login_cookies)
+        url = base_params
+        url.update({'t': int(time.time()*1000)})
+        url = 'https://mtop.damai.cn/h5/mtop.trade.order.build.h5/4.0/?' + urlencode(url)
+        response = self.session.options(url, headers=headers, data=params, cookies=self.login_cookies)
+        response = self.session.post(url, headers=headers, data=params, cookies=self.login_cookies)
+        # response = self.session.get('https://m.damai.cn/app/dmfe/h5-ultron-buy/index.html', headers=headers,
+        #                             params=params, cookies=self.login_cookies)
+        # text, lhtml = tools.extract_dynamic_page(response.url)
         result = re.search('window.__INIT_DATA__[\s\S]*?};', response.text)
         self.login_cookies.update(self.session.cookies)
         try:
@@ -168,6 +168,7 @@ class DaMaiTicket:
         :param seat_info:  座位id
         :return:
         """
+        headers = base_headers
         headers = {
             'authority': 'buy.damai.cn',
             'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="98", "Google Chrome";v="98"',
@@ -227,8 +228,9 @@ class DaMaiTicket:
             print('支付宝支付链接: ', buy_status.get('module').get('alipayWapCashierUrl'))
 
     def run(self):
-        if len(self.viewer) != self.buy_nums:
-            print('-' * 10, '购买数量与实际观演人数量不符', '-' * 10)
+        # login check
+        if not self.login_id:
+            print('-' * 10, 'Login Info Error', '-' * 10)
             return
         if os.path.exists('cookies.pkl'):
             cookies = tools.load_cookies()
@@ -255,12 +257,13 @@ class DaMaiTicket:
             ticket_info, sku_id_sequence, sku_id = self.step1_get_order_info(self.item_id, commodity_param,
                                                                              ticket_price=self.ticket_price)
             ticket_sku_status = ticket_info['skuPagePcBuyBtn']['skuBtnList'][sku_id_sequence]['btnText']
+
             if ticket_sku_status == '即将开抢':
                 continue
             elif ticket_sku_status == '缺货登记':
                 print('-' * 10, '手慢了，该票价已经售空: ', ticket_sku_status, '-' * 10)
                 return False
-            elif ticket_sku_status == '立即购买':
+            elif ticket_sku_status == '立即预订':
                 buy_serial_number = '{}_{}_{}'.format(self.item_id, self.buy_nums, sku_id)
                 submit_order_info = self.step2_click_buy_now(ex_params, buy_serial_number)
                 break
@@ -302,9 +305,11 @@ class DaMaiTicket:
                 submit_order_info = self.step2_click_confirm_select_seats(project_id, perform_id, seat_info,
                                                                           buy_serial_number)
                 break
+
         if not buy_serial_number or not submit_order_info:
             print('-' * 10, '获取购票所需信息失败', '-' * 10)
             return
+
         self.step3_submit_order(submit_order_info, self.viewer, seat_info)
 
 
